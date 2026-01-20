@@ -13,23 +13,39 @@
     <p>Projektplanung zur besseren Organisation</p>
 </header>
 
+<!-- LOGIN -->
+<section id="loginBox" class="form-section">
+    <h2>Login</h2>
+
+    <label>Benutzername</label>
+    <input id="username" type="text">
+
+    <label>Passwort</label>
+    <input id="password" type="password">
+
+    <button onclick="login()">Login</button>
+</section>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+
 <section class="form-section">
     <h2>Projektinformationen</h2>
 
     <label>Projektname</label>
-    <input type="text" placeholder="Name des Projekts" size="30">
+    <input id="projectName" type="text">
 
     <label>Projektbeschreibung</label>
-    <textarea rows="4" placeholder="Ziele, Rahmenbedingungen, Stakeholder ..."></textarea>
+    <textarea id="projectDesc" rows="4"></textarea>
 
     <div class="grid-2">
         <div>
             <label>Startdatum</label>
-            <input type="date">
+            <input id="startDate" type="date">
         </div>
         <div>
             <label>Enddatum</label>
-            <input type="date">
+            <input id="endDate" type="date">
         </div>
     </div>
 </section>
@@ -57,42 +73,140 @@
 
 <section class="form-section">
     <h2>Kanban Board</h2>
+
     <div class="kanban">
         <div class="col">
             <h3>To Do</h3>
-            <div class="kanban-box" contenteditable="true">Neue Aufgabe eingeben…</div>
+            <input id="newTask" placeholder="Neue Aufgabe erstellen"
+                onkeydown="if(event.key==='Enter'){addTask()}">
+            <div class="kanban-box" id="todo"
+                ondrop="drop(event)" ondragover="allowDrop(event)"></div>
         </div>
+
         <div class="col">
             <h3>In Progress</h3>
-            <div class="kanban-box" contenteditable="true"></div>
+            <h3></h3>
+            <div class="kanban-box" id="progress"
+                ondrop="drop(event)" ondragover="allowDrop(event)"></div>
         </div>
+
         <div class="col">
             <h3>Review</h3>
-            <div class="kanban-box" contenteditable="true"></div>
+            <div class="kanban-box" id="review"
+                ondrop="drop(event)" ondragover="allowDrop(event)"></div>
         </div>
+
         <div class="col">
             <h3>Done</h3>
-            <div class="kanban-box" contenteditable="true"></div>
+            <div class="kanban-box" id="done"
+                ondrop="drop(event)" ondragover="allowDrop(event)"></div>
         </div>
     </div>
+
+    <button onclick="logout()">Logout</button>
 </section>
 
-<section class="form-section">
-    <h2>Was ich aus diesem Projekt gelernt habe</h2>
-    <ul>
-        <li>Ich habe gelernt, wie eine HTML-Seite aufgebaut ist.</li>
-        <li>Ich kann Formulare mit Eingabefeldern und Textbereichen erstellen.</li>
-        <li>Ich habe Tabellen für strukturierte Informationen genutzt.</li>
-        <li>Ich habe ein einfaches Kanban-Board mit HTML umgesetzt.</li>
-        <li>Ich weiß, wie man Inhalte mit <code>contenteditable</code> bearbeitbar macht.</li>
-        <li>Ich habe verstanden, warum HTML und CSS getrennt verwendet werden.</li>
-        <li>Ich kann eine Webseite übersichtlich strukturieren.</li>
-    </ul>
-</section>
+</div>
 
 <footer>
-    <p>© 2025 Projektplaner • HTML & CSS only • Offline nutzbar</p>
+    <p>© 2025 Projektplaner • HTML, CSS & JavaScript • LocalStorage</p>
 </footer>
+
+<script>
+let currentUser = null;
+let taskId = 0;
+
+/* LOGIN */
+function login() {
+    const u = username.value.trim();
+    const p = password.value;
+    if (!u || !p) return alert("Bitte alles ausfüllen");
+
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+    if (!users[u]) users[u] = { password: p, data: {} };
+    if (users[u].password !== p) return alert("Falsches Passwort");
+
+    currentUser = u;
+    localStorage.setItem("currentUser", u);
+
+    loginBox.style.display = "none";
+    app.style.display = "block";
+    loadAll();
+}
+
+function logout() {
+    localStorage.removeItem("currentUser");
+    location.reload();
+}
+
+/* KANBAN */
+function addTask() {
+    const text = newTask.value.trim();
+    if (!text) return;
+
+    const t = document.createElement("div");
+    t.className = "task";
+    t.textContent = text;
+    t.draggable = true;
+    t.id = "task-" + taskId++;
+    t.ondragstart = drag;
+
+    todo.appendChild(t);
+    newTask.value = "";
+    saveAll();
+}
+
+function allowDrop(e) { e.preventDefault(); }
+function drag(e) { e.dataTransfer.setData("id", e.target.id); }
+function drop(e) {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("id");
+    e.target.appendChild(document.getElementById(id));
+    saveAll();
+}
+
+/* STORAGE */
+function saveAll() {
+    const users = JSON.parse(localStorage.getItem("users"));
+    users[currentUser].data = {
+        projectName: projectName.value,
+        projectDesc: projectDesc.value,
+        startDate: startDate.value,
+        endDate: endDate.value,
+        todo: todo.innerHTML,
+        progress: progress.innerHTML,
+        review: review.innerHTML,
+        done: done.innerHTML
+    };
+    localStorage.setItem("users", JSON.stringify(users));
+}
+
+function loadAll() {
+    const u = JSON.parse(localStorage.getItem("users"))[currentUser].data || {};
+    projectName.value = u.projectName || "";
+    projectDesc.value = u.projectDesc || "";
+    startDate.value = u.startDate || "";
+    endDate.value = u.endDate || "";
+    todo.innerHTML = u.todo || "";
+    progress.innerHTML = u.progress || "";
+    review.innerHTML = u.review || "";
+    done.innerHTML = u.done || "";
+
+    document.querySelectorAll(".task").forEach(t => t.ondragstart = drag);
+}
+
+/* AUTO LOGIN */
+window.onload = () => {
+    const u = localStorage.getItem("currentUser");
+    if (u) {
+        currentUser = u;
+        loginBox.style.display = "none";
+        app.style.display = "block";
+        loadAll();
+    }
+};
+</script>
 
 </body>
 </html>
