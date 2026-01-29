@@ -8,19 +8,17 @@
 </head>
 <body>
 
+<nav>
+    <a href="index.html">📋 Dashboard</a>
+    <a href="projektplanung.html" class="active">📊 Projektplanung</a>
+</nav>
+
 <header>
     <h1>📊 Projektplanung</h1>
     <p>Detaillierte Planung von Ressourcen, Budget und Timeline</p>
 </header>
 
 <div id="app">
-
-<!-- Navigation -->
-<section class="form-section">
-    <div class="button-group">
-        <a href="index.html" class="nav-btn">← Zurück zum Dashboard</a>
-    </div>
-</section>
 
 <!-- Ressourcenplanung -->
 <section class="form-section">
@@ -124,7 +122,6 @@
 <section class="form-section">
     <div class="button-group">
         <button onclick="saveProjectPlanning()" class="save-btn">💾 Speichern</button>
-        <a href="index.html" class="nav-btn" style="padding: 10px 20px; text-decoration: none;">← Zurück</a>
     </div>
 </section>
 
@@ -297,6 +294,11 @@ window.onload = () => {
     }
     currentUser = u;
     loadProjectPlanning();
+    // Navigation aktiv setzen
+    document.querySelectorAll("nav a").forEach(link => {
+        link.classList.remove("active");
+    });
+    document.querySelector("nav a[href='projektplanung.html']").classList.add("active");
 };
 </script>
 

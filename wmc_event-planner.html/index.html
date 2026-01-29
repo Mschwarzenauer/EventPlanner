@@ -8,6 +8,11 @@
 </head>
 <body>
 
+<nav>
+    <a href="index.html" class="active">📋 Dashboard</a>
+    <a href="projektplanung.html">📊 Projektplanung</a>
+</nav>
+
 <header>
     <h1>📋 Projektplaner</h1>
     <p>Projektplanung zur besseren Organisation</p>
@@ -58,17 +63,26 @@
             <th>Fälligkeitsdatum</th>
             <th>Status</th>
         </tr>
-        <tr>
-            <td contenteditable="true">MVP</td>
-            <td><input type="date"></td>
-            <td contenteditable="true">In Planung</td>
-        </tr>
-        <tr>
-            <td contenteditable="true">Release 1.0</td>
-            <td><input type="date"></td>
-            <td contenteditable="true">Offen</td>
-        </tr>
+        <tbody id="milestoneTable">
+            <tr>
+                <td contenteditable="true" onblur="saveAll()">MVP</td>
+                <td><input type="date" onchange="saveAll()"></td>
+                <td contenteditable="true" onblur="saveAll()">In Planung</td>
+            </tr>
+            <tr>
+                <td contenteditable="true" onblur="saveAll()">Release 1.0</td>
+                <td><input type="date" onchange="saveAll()"></td>
+                <td contenteditable="true" onblur="saveAll()">Offen</td>
+            </tr>
+        </tbody>
     </table>
+</section>
+
+<section class="form-section">
+    <h2>Navigation</h2>
+    <div class="button-group">
+        <a href="projektplanung.html" class="nav-link">📊 Projektplanung</a>
+    </div>
 </section>
 
 <section class="form-section">
@@ -102,7 +116,10 @@
         </div>
     </div>
 
-    <button onclick="logout()">Logout</button>
+    <div class="button-group">
+        <button onclick="saveAll()" class="save-btn">💾 Speichern</button>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+    </div>
 </section>
 
 </div>
@@ -114,6 +131,15 @@
 <script>
 let currentUser = null;
 let taskId = 0;
+
+// Speicher-Events für automatisches Speichern
+document.addEventListener("change", saveAll);
+document.addEventListener("input", saveAll);
+
+// Speichern beim Schließen des Tabs
+window.addEventListener("beforeunload", () => {
+    if (currentUser) saveAll();
+});
 
 /* LOGIN */
 function login() {
@@ -167,16 +193,34 @@ function drop(e) {
 
 /* STORAGE */
 function saveAll() {
+    if (!currentUser) return;
+    
     const users = JSON.parse(localStorage.getItem("users"));
+    
+    // Meilensteine aus Tabelle auslesen
+    const milestones = [];
+    document.querySelectorAll("#milestoneTable tr").forEach(row => {
+        const cells = row.querySelectorAll("td, input");
+        if (cells.length === 3) {
+            milestones.push({
+                name: cells[0].textContent || cells[0].value,
+                date: cells[1].value,
+                status: cells[2].textContent || cells[2].value
+            });
+        }
+    });
+    
     users[currentUser].data = {
         projectName: projectName.value,
         projectDesc: projectDesc.value,
         startDate: startDate.value,
         endDate: endDate.value,
+        milestones: milestones,
         todo: todo.innerHTML,
         progress: progress.innerHTML,
         review: review.innerHTML,
-        done: done.innerHTML
+        done: done.innerHTML,
+        taskId: taskId
     };
     localStorage.setItem("users", JSON.stringify(users));
 }
@@ -187,11 +231,31 @@ function loadAll() {
     projectDesc.value = u.projectDesc || "";
     startDate.value = u.startDate || "";
     endDate.value = u.endDate || "";
+    
+    // Meilensteine laden
+    if (u.milestones && u.milestones.length > 0) {
+        milestoneTable.innerHTML = "";
+        u.milestones.forEach(m => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td contenteditable="true" onblur="saveAll()">${m.name}</td>
+                <td><input type="date" value="${m.date}" onchange="saveAll()"></td>
+                <td contenteditable="true" onblur="saveAll()">${m.status}</td>
+            `;
+            milestoneTable.appendChild(row);
+        });
+    }
+    
+    // Kanban-Aufgaben laden
     todo.innerHTML = u.todo || "";
     progress.innerHTML = u.progress || "";
     review.innerHTML = u.review || "";
     done.innerHTML = u.done || "";
-
+    
+    // Task ID wiederherstellen
+    taskId = u.taskId || 0;
+    
+    // Drag-Events für Aufgaben aktivieren
     document.querySelectorAll(".task").forEach(t => t.ondragstart = drag);
 }
 
@@ -204,6 +268,11 @@ window.onload = () => {
         app.style.display = "block";
         loadAll();
     }
+    // Navigation aktiv setzen
+    document.querySelectorAll("nav a").forEach(link => {
+        link.classList.remove("active");
+    });
+    document.querySelector("nav a[href='index.html']").classList.add("active");
 };
 </script>
 
