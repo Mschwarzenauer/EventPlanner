@@ -134,20 +134,12 @@
 <script>
 let currentUser = null;
 
-// Check Login beim Laden
-window.addEventListener("load", () => {
-    const u = localStorage.getItem("currentUser");
-    if (!u) {
-        location.href = "index.html";
-        return;
-    }
-    currentUser = u;
-    loadProjectPlanning();
-    // Navigation aktiv setzen
-    document.querySelectorAll("nav a").forEach(link => {
-        link.classList.remove("active");
-    });
-    document.querySelector("nav a[href='projektplanung.html']").classList.add("active");
+// Auto-Save
+document.addEventListener("change", saveProjectPlanning);
+document.addEventListener("input", () => updateBudgetDisplay());
+
+window.addEventListener("beforeunload", () => {
+    if (currentUser) saveProjectPlanning();
 });
 
 /* Team Management */
@@ -294,8 +286,6 @@ function loadProjectPlanning() {
 }
 
 /* Init */
-let currentUser = null;
-
 document.addEventListener("DOMContentLoaded", () => {
     const u = localStorage.getItem("currentUser");
     if (u) {
