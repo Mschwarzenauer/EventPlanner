@@ -261,12 +261,17 @@ window.onload = () => {
         app.style.display = "block";
         loadAll();
     }
-    // Navigation aktiv setzen
-    document.querySelectorAll("nav a").forEach(link => {
-        link.classList.remove("active");
-    });
-    document.querySelector("nav a[href='index.html']").classList.add("active");
+    setActiveNav();
 };
+
+function setActiveNav() {
+    if (document.querySelector("nav")) {
+        document.querySelectorAll("nav a").forEach(link => {
+            link.classList.remove("active");
+        });
+        document.querySelector("nav a[href='index.html']").classList.add("active");
+    }
+}
 </script>
 
 </body>

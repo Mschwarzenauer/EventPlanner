@@ -294,20 +294,36 @@ function loadProjectPlanning() {
 }
 
 /* Init */
-window.addEventListener("load", () => {
+let initDone = false;
+
+function initPage() {
+    if (initDone) return;
+    initDone = true;
+    
     const u = localStorage.getItem("currentUser");
     if (!u) {
-        location.href = "index.html";
+        // Redirect to login after short delay
+        setTimeout(() => location.href = "index.html", 100);
         return;
     }
     currentUser = u;
     loadProjectPlanning();
-    // Navigation aktiv setzen
+    setActiveNav();
+}
+
+function setActiveNav() {
     document.querySelectorAll("nav a").forEach(link => {
         link.classList.remove("active");
     });
     document.querySelector("nav a[href='projektplanung.html']").classList.add("active");
-});
+}
+
+// Check if DOM is ready
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPage);
+} else {
+    initPage();
+}
 
 // Auto-Save
 document.addEventListener("change", saveProjectPlanning);
