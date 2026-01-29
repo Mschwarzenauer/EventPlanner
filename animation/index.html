@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <title>Grid</title>
+        <style>
+            .container
+            {
+                display: grid;
+                grid-template-columns: auto auto auto;
+                background-color: aqua;
+                padding: 10px;
+            }
+
+            .container > div
+            {
+                background-color: white;
+                border: 1px solid black;
+                padding: 10px;
+                font-size: 40px;
+                text-align: center;
+            }
+
+            .container > .item1
+            {
+                background-color: black;
+            }
+
+            .item1
+            {
+                grid-column-start: 1;
+                grid-column-end: 3;
+            }
+
+            @keyframes shake
+            {
+                0% {transform: translate(1px,1px) rotate(0deg);}
+
+            }
+
+        </style>
+    </head>
+    <body>
+        <h1>Grid Layout</h1>
+        <div class ="container">
+            <div class ="Item1">1</div>
+            <div class ="Item2">2</div>
+            <div class ="Item3">3</div>
+            <div class ="Item4">4</div>
+            <div class ="Item5">5</div>
+            <div class ="Item6">6</div>
+        </div>
+    </body>
+</html>

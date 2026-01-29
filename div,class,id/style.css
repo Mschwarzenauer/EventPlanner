@@ -1,0 +1,17 @@
+/* ID selector: used for a unique element */
+#header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Class selector: used for multiple elements */
+.box {
+    width: 250px;
+    padding: 15px;
+    margin: 10px;
+    background-color: #e0e0e0;
+    border: 2px solid #999;
+    border-radius: 8px;
+}
