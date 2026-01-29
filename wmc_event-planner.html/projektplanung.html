@@ -195,9 +195,19 @@ function saveProjectPlanning() {
     if (!currentUser) return;
 
     const users = JSON.parse(localStorage.getItem("users"));
-    if (!users[currentUser].projectPlanning) {
-        users[currentUser].projectPlanning = {};
-    }
+    
+    // Meilensteine aus Tabelle auslesen
+    const milestones = [];
+    document.querySelectorAll("#milestoneTable tr").forEach(row => {
+        const cells = row.querySelectorAll("td, input");
+        if (cells.length === 3) {
+            milestones.push({
+                name: cells[0].textContent || cells[0].value,
+                date: cells[1].value,
+                status: cells[2].textContent || cells[2].value
+            });
+        }
+    });
 
     // Team auslesen
     const team = [];
@@ -226,8 +236,11 @@ function saveProjectPlanning() {
         }
     });
 
-    users[currentUser].projectPlanning = {
+    // Speichern in Projekt-Daten
+    users[currentUser].data = users[currentUser].data || {};
+    users[currentUser].data.projectPlanning = {
         team: team,
+        milestones: milestones,
         totalBudget: totalBudget.value,
         spentBudget: spentBudget.value,
         budgetDetails: budgetDetails.value,
@@ -242,7 +255,7 @@ function saveProjectPlanning() {
 
 function loadProjectPlanning() {
     const users = JSON.parse(localStorage.getItem("users"));
-    const data = users[currentUser].projectPlanning || {};
+    const data = (users[currentUser].data && users[currentUser].data.projectPlanning) || {};
 
     // Team laden
     if (data.team && data.team.length > 0) {
@@ -263,6 +276,20 @@ function loadProjectPlanning() {
     spentBudget.value = data.spentBudget || "";
     budgetDetails.value = data.budgetDetails || "";
     updateBudgetDisplay();
+
+    // Meilensteine laden
+    if (data.milestones && data.milestones.length > 0) {
+        milestoneTable.innerHTML = "";
+        data.milestones.forEach(m => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td contenteditable="true" onblur="saveProjectPlanning()">${m.name}</td>
+                <td><input type="date" value="${m.date}" onchange="saveProjectPlanning()"></td>
+                <td contenteditable="true" onblur="saveProjectPlanning()">${m.status}</td>
+            `;
+            milestoneTable.appendChild(row);
+        });
+    }
 
     // Timeline laden
     timelineEvents.value = data.timelineEvents || "";
@@ -289,16 +316,18 @@ function loadProjectPlanning() {
 /* Init */
 document.addEventListener("DOMContentLoaded", () => {
     const u = localStorage.getItem("currentUser");
-    if (u) {
-        currentUser = u;
-        loadProjectPlanning();
+    if (!u) {
+        // Nicht eingeloggt, zur Login-Seite redirect
+        window.location.href = "index.html";
+        return;
     }
+    currentUser = u;
+    loadProjectPlanning();
     setActiveNav();
 });
 
 function setActiveNav() {
-    const navLinks = document.querySelectorAll("nav a");
-    navLinks.forEach(link => {
+    document.querySelectorAll("nav a").forEach(link => {
         link.classList.remove("active");
         if (link.href.includes("projektplanung.html")) {
             link.classList.add("active");
