@@ -294,35 +294,24 @@ function loadProjectPlanning() {
 }
 
 /* Init */
-let initDone = false;
+let currentUser = localStorage.getItem("currentUser");
 
-function initPage() {
-    if (initDone) return;
-    initDone = true;
-    
-    const u = localStorage.getItem("currentUser");
-    if (!u) {
-        // Redirect to login after short delay
-        setTimeout(() => location.href = "index.html", 100);
-        return;
-    }
-    currentUser = u;
-    loadProjectPlanning();
+// Set active nav immediately
+document.addEventListener("DOMContentLoaded", () => {
     setActiveNav();
-}
+    if (currentUser) {
+        loadProjectPlanning();
+    }
+});
 
 function setActiveNav() {
-    document.querySelectorAll("nav a").forEach(link => {
+    const navLinks = document.querySelectorAll("nav a");
+    navLinks.forEach(link => {
         link.classList.remove("active");
+        if (link.href.includes("projektplanung.html")) {
+            link.classList.add("active");
+        }
     });
-    document.querySelector("nav a[href='projektplanung.html']").classList.add("active");
-}
-
-// Check if DOM is ready
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initPage);
-} else {
-    initPage();
 }
 
 // Auto-Save
