@@ -176,13 +176,35 @@ function addTask() {
     saveAll();
 }
 
-function allowDrop(e) { e.preventDefault(); }
-function drag(e) { e.dataTransfer.setData("id", e.target.id); }
+function allowDrop(e) { 
+    e.preventDefault(); 
+    e.target.style.opacity = "0.8";
+}
+
+function drag(e) { 
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("id", e.target.id); 
+}
+
 function drop(e) {
     e.preventDefault();
+    e.target.style.opacity = "1";
+    
     const id = e.dataTransfer.getData("id");
-    e.target.appendChild(document.getElementById(id));
-    saveAll();
+    const element = document.getElementById(id);
+    
+    if (element) {
+        // Finde die richtige Kanban-Box (parent)
+        let dropTarget = e.target;
+        while (dropTarget && !dropTarget.classList.contains("kanban-box")) {
+            dropTarget = dropTarget.parentElement;
+        }
+        
+        if (dropTarget) {
+            dropTarget.appendChild(element);
+            saveAll();
+        }
+    }
 }
 
 /* STORAGE */
@@ -250,7 +272,10 @@ function loadAll() {
     taskId = u.taskId || 0;
     
     // Drag-Events für Aufgaben aktivieren
-    document.querySelectorAll(".task").forEach(t => t.ondragstart = drag);
+    document.querySelectorAll(".task").forEach(t => {
+        t.draggable = true;
+        t.ondragstart = drag;
+    });
 }
 
 /* AUTO LOGIN */
