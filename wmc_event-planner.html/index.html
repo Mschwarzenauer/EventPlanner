@@ -112,6 +112,7 @@
 
     <div class="button-group">
         <button onclick="saveAll()" class="save-btn">💾 Speichern</button>
+        <button onclick="showUserInfo()" class="save-btn" style="background: #17a2b8;">👤 User Info</button>
         <button onclick="logout()" class="logout-btn">Logout</button>
     </div>
 </section>
@@ -143,11 +144,19 @@ function login() {
 
     const users = JSON.parse(localStorage.getItem("users") || "{}");
 
-    if (!users[u]) users[u] = { password: p, data: {} };
-    if (users[u].password !== p) return alert("Falsches Passwort");
+    // Neuer User - Passwort speichern
+    if (!users[u]) {
+        users[u] = { password: p, data: {} };
+        localStorage.setItem("users", JSON.stringify(users));
+    } else if (users[u].password !== p) {
+        // Bestehendes Passwort - muss korrekt sein
+        return alert("Falsches Passwort");
+    }
 
     currentUser = u;
     localStorage.setItem("currentUser", u);
+    
+    console.log("User " + u + " eingeloggt");
 
     loginBox.style.display = "none";
     app.style.display = "block";
@@ -155,8 +164,27 @@ function login() {
 }
 
 function logout() {
+    console.log("User " + currentUser + " abgeloggt");
     localStorage.removeItem("currentUser");
-    location.reload();
+    currentUser = null;
+    username.value = "";
+    password.value = "";
+    loginBox.style.display = "block";
+    app.style.display = "none";
+}
+
+function showUserInfo() {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    const userCount = Object.keys(users).length;
+    const userList = Object.keys(users).join(", ");
+    const currentData = users[currentUser];
+    
+    alert(`👤 User-Information\n\n` +
+          `Aktueller User: ${currentUser}\n` +
+          `Gesamt Benutzer: ${userCount}\n` +
+          `Alle User: ${userList}\n\n` +
+          `Passwort gespeichert: ${currentData?.password ? "✓ Ja" : "✗ Nein"}\n` +
+          `Projekte gespeichert: ${currentData?.data ? "✓ Ja" : "✗ Nein"}`);
 }
 
 /* KANBAN */
